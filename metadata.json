@@ -1,0 +1,5 @@
+{
+  "name": "PrestiSéjour: Housing, Hotel & Residence Services",
+  "description": "A comprehensive web application for managing and booking housing, hotel rooms, and residences. It provides distinct dashboards for clients, property agents, managers, and a super-administrator with full control over the platform.",
+  "requestFramePermissions": []
+}
