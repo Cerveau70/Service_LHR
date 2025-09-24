@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, VisitReservation, UserRole } from '../../types';
+import { User, VisitReservation, UserRole, VisitStatus } from '../../types/extended';
 import api from '../../services/api';
 
 interface ManageReservationsProps {
@@ -42,8 +42,8 @@ const ManageReservations: React.FC<ManageReservationsProps> = ({ currentUser }) 
                 <input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)} className="p-2 border rounded-md" placeholder="Filtrer par date" />
                 <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="p-2 border rounded-md">
                     <option value="">Tous les statuts</option>
-                    <option value="Validated">Validée</option>
-                    <option value="Refunded">Remboursée</option>
+                    <option value={VisitStatus.VALIDATED}>Validée</option>
+                    <option value={VisitStatus.REFUNDED}>Remboursée</option>
                 </select>
             </div>
             {loading ? <p>Chargement...</p> : (
@@ -68,13 +68,13 @@ const ManageReservations: React.FC<ManageReservationsProps> = ({ currentUser }) 
                                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">{res.propertyName}</td>
                                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">{res.visitDate}</td>
                                      <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                        <span className={`relative inline-block px-3 py-1 font-semibold leading-tight ${res.status === 'Validated' ? 'text-green-900' : 'text-red-900'}`}>
-                                            <span aria-hidden className={`absolute inset-0 ${res.status === 'Validated' ? 'bg-green-200' : 'bg-red-200'} opacity-50 rounded-full`}></span>
-                                            <span className="relative">{res.status === 'Validated' ? 'Validée' : 'Remboursée'}</span>
+                                        <span className={`relative inline-block px-3 py-1 font-semibold leading-tight ${res.status === VisitStatus.VALIDATED ? 'text-green-900' : 'text-red-900'}`}>
+                                            <span aria-hidden className={`absolute inset-0 ${res.status === VisitStatus.VALIDATED ? 'bg-green-200' : 'bg-red-200'} opacity-50 rounded-full`}></span>
+                                            <span className="relative">{res.status === VisitStatus.VALIDATED ? 'Validée' : 'Remboursée'}</span>
                                         </span>
                                     </td>
                                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm text-right">
-                                        {currentUser.role === UserRole.ADMIN && res.status === 'Validated' && (
+                                        {currentUser.role === UserRole.ADMIN && res.status === VisitStatus.VALIDATED && (
                                             <button className="text-red-600 hover:text-red-900">Annuler</button>
                                         )}
                                     </td>

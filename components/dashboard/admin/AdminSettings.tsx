@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { cities, communes, propertyTypes } from '../../../constants';
 import api from '../../../services/api';
+import { User } from '../../../types/extended';
+
+interface AdminSettingsProps {
+    currentUser: User;
+}
 
 const SettingSection: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
     <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
@@ -12,7 +17,7 @@ const SettingSection: React.FC<{ title: string; children: React.ReactNode }> = (
     </div>
 );
 
-const AdminSettings: React.FC = () => {
+const AdminSettings: React.FC<AdminSettingsProps> = ({ currentUser }) => {
     const [reservationFee, setReservationFee] = useState<number>(0);
 
     useEffect(() => {

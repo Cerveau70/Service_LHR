@@ -1,10 +1,23 @@
 import React, { useState } from 'react';
+import {
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField,
+    Button,
+    Grid,
+    Typography,
+    Box,
+    IconButton
+} from '@mui/material';
+import { Close } from '@mui/icons-material';
 import { Property } from '../types';
 
 interface BookingModalProps {
     property: Property;
     onClose: () => void;
-    onSuccess: () => void;
+    onSuccess: (data: any) => void;
 }
 
 const BookingModal: React.FC<BookingModalProps> = ({ property, onClose, onSuccess }) => {
@@ -28,42 +41,125 @@ const BookingModal: React.FC<BookingModalProps> = ({ property, onClose, onSucces
         // Here you would integrate with a payment gateway (Wave, Visa)
         // For now, we simulate success
         console.log("Booking data:", { propertyId: property.id, ...formData });
-        onSuccess();
+        onSuccess({ propertyId: property.id, ...formData });
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-2xl max-w-lg w-full">
-                <div className="p-6">
-                    <div className="flex justify-between items-center border-b pb-3 mb-4">
-                        <h3 className="text-xl font-bold text-accent">Réservation pour : {property.name}</h3>
-                        <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
-                    </div>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input type="text" name="name" placeholder="Nom" required onChange={handleInputChange} className="p-2 border rounded-md w-full" />
-                            <input type="text" name="firstname" placeholder="Prénom(s)" required onChange={handleInputChange} className="p-2 border rounded-md w-full" />
-                        </div>
-                        <input type="email" name="email" placeholder="Email" required onChange={handleInputChange} className="p-2 border rounded-md w-full" />
-                        <input type="tel" name="contact" placeholder="Contact" required onChange={handleInputChange} className="p-2 border rounded-md w-full" />
-                        <input type="text" name="address" placeholder="Adresse" required onChange={handleInputChange} className="p-2 border rounded-md w-full" />
+        <Dialog
+            open={true}
+            onClose={onClose}
+            maxWidth="sm"
+            fullWidth
+            PaperProps={{
+                sx: { borderRadius: 2 }
+            }}
+        >
+            <DialogTitle sx={{ pb: 1 }}>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Typography variant="h5" component="h3" color="primary">
+                        Réservation pour : {property.name}
+                    </Typography>
+                    <IconButton onClick={onClose} size="large">
+                        <Close />
+                    </IconButton>
+                </Box>
+            </DialogTitle>
+
+            <form onSubmit={handleSubmit}>
+                <DialogContent sx={{ py: 2 }}>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                fullWidth
+                                name="name"
+                                label="Nom"
+                                required
+                                value={formData.name}
+                                onChange={handleInputChange}
+                                variant="outlined"
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                fullWidth
+                                name="firstname"
+                                label="Prénom(s)"
+                                required
+                                value={formData.firstname}
+                                onChange={handleInputChange}
+                                variant="outlined"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                fullWidth
+                                name="email"
+                                label="Email"
+                                type="email"
+                                required
+                                value={formData.email}
+                                onChange={handleInputChange}
+                                variant="outlined"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                fullWidth
+                                name="contact"
+                                label="Contact"
+                                type="tel"
+                                required
+                                value={formData.contact}
+                                onChange={handleInputChange}
+                                variant="outlined"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                fullWidth
+                                name="address"
+                                label="Adresse"
+                                required
+                                value={formData.address}
+                                onChange={handleInputChange}
+                                variant="outlined"
+                            />
+                        </Grid>
 
                         {isHousing && (
-                            <div>
-                                <label className="text-sm font-medium text-gray-700">Date de visite</label>
-                                <input type="date" name="visitDate" required onChange={handleInputChange} className="p-2 border rounded-md w-full" />
-                            </div>
+                            <Grid item xs={12}>
+                                <TextField
+                                    fullWidth
+                                    name="visitDate"
+                                    label="Date de visite"
+                                    type="date"
+                                    required
+                                    value={formData.visitDate}
+                                    onChange={handleInputChange}
+                                    variant="outlined"
+                                    InputLabelProps={{
+                                        shrink: true,
+                                    }}
+                                />
+                            </Grid>
                         )}
+                    </Grid>
+                </DialogContent>
 
-                        <div className="pt-4 text-right">
-                             <button type="submit" className="px-6 py-2 bg-primary text-white font-bold rounded-lg hover:bg-blue-700">
-                                Payer les frais {isHousing ? `(${property.visitFee?.toLocaleString('fr-FR')} FCFA)` : ''}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+                <DialogActions sx={{ p: 3, pt: 0 }}>
+                    <Button onClick={onClose} variant="outlined">
+                        Annuler
+                    </Button>
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        size="large"
+                    >
+                        Payer les frais {isHousing ? `(${property.visitFee?.toLocaleString('fr-FR')} FCFA)` : ''}
+                    </Button>
+                </DialogActions>
+            </form>
+        </Dialog>
     );
 };
 

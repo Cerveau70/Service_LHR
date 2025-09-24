@@ -1,9 +1,11 @@
-import { User, Property, Reservation, VisitReservation } from "../types/extended";
-import axios from "axios";
+import { User, Property, Reservation, VisitReservation, UserRole, UserStatus, Permission, Statistics, SystemSettings, City, Commune, PropertyType, HotelType } from "../types/extended";
 
 const API_BASE_URL = "http://localhost:8080/api";
 
-const api = {
+
+
+
+const extendedApi = {
   // ----- AUTH -----
   login: async (email: string): Promise<User | undefined> => {
     try {
@@ -35,26 +37,18 @@ const api = {
     }
   },
 
-  // ----- MFA -----
-  sendMfaCode: async (email: string): Promise<boolean> => {
-    try {
-      const res = await axios.post(`${API_BASE_URL}/send-mfa`, { email });
-      return res.status === 200;
-    } catch (err) {
-      console.error("Send MFA error:", err);
-      return false;
-    }
-  },
+  deleteReservation: async (id: string | number): Promise<boolean> => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/reservations/${id}`, { method: "DELETE" });
+    return res.ok;
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+},
 
-  verifyMfaCode: async (email: string, code: string): Promise<User | null> => {
-    try {
-      const res = await axios.post(`${API_BASE_URL}/verify-mfa`, { email, code });
-      return res.data;
-    } catch (err) {
-      console.error("Verify MFA error:", err);
-      return null;
-    }
-  },
+
+
 
   // ----- PROPERTIES -----
   getProperties: async (filters: Partial<{ serviceType: string; city: string; commune: string }> = {}): Promise<Property[]> => {
@@ -72,7 +66,7 @@ const api = {
     }
   },
 
-  getAgentProperties: async (agentId: string): Promise<Property[]> => {
+  getAgentProperties: async (agentId: string | number): Promise<Property[]> => {
     try {
       const res = await fetch(`${API_BASE_URL}/properties/agent/${agentId}`);
       if (!res.ok) throw new Error("Get agent properties failed");
@@ -98,7 +92,7 @@ const api = {
     }
   },
 
-  updateProperty: async (id: number, data: Partial<Property>): Promise<Property | undefined> => {
+  updateProperty: async (id: string | number, data: Partial<Property>): Promise<Property | undefined> => {
     try {
       const res = await fetch(`${API_BASE_URL}/properties/${id}`, {
         method: "PUT",
@@ -113,7 +107,7 @@ const api = {
     }
   },
 
-  deleteProperty: async (id: number): Promise<boolean> => {
+  deleteProperty: async (id: string | number): Promise<boolean> => {
     try {
       const res = await fetch(`${API_BASE_URL}/properties/${id}`, { method: "DELETE" });
       return res.ok;
@@ -135,7 +129,7 @@ const api = {
     }
   },
 
-  getReservationsForAgent: async (agentId: string): Promise<Reservation[]> => {
+  getReservationsForAgent: async (agentId: string | number): Promise<Reservation[]> => {
     try {
       const res = await fetch(`${API_BASE_URL}/reservations/agent/${agentId}`);
       if (!res.ok) throw new Error("Get reservations for agent failed");
@@ -146,7 +140,11 @@ const api = {
     }
   },
 
-  cancelReservation: async (id: number): Promise<boolean> => {
+  
+
+
+
+  cancelReservation: async (id: string | number): Promise<boolean> => {
     try {
       const res = await fetch(`${API_BASE_URL}/reservations/${id}/cancel`, { method: "PUT" });
       return res.ok;
@@ -155,54 +153,7 @@ const api = {
       return false;
     }
   },
-
-  // ----- VISIT RESERVATIONS -----
-  createVisitReservation: async (data: any): Promise<VisitReservation | undefined> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/visit-reservations`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error("Create visit reservation failed");
-      return await res.json();
-    } catch (err) {
-      console.error(err);
-      return undefined;
-    }
-  },
-
-  getAllVisitReservations: async (): Promise<VisitReservation[]> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/visit-reservations`);
-      if (!res.ok) throw new Error("Get all visit reservations failed");
-      return await res.json();
-    } catch (err) {
-      console.error(err);
-      return [];
-    }
-  },
-
-  getVisitReservationsForAgent: async (agentId: string): Promise<VisitReservation[]> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/visit-reservations/agent/${agentId}`);
-      if (!res.ok) throw new Error("Get visit reservations for agent failed");
-      return await res.json();
-    } catch (err) {
-      console.error(err);
-      return [];
-    }
-  },
-
-  cancelVisitReservation: async (id: number): Promise<boolean> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/visit-reservations/${id}/cancel`, { method: "PUT" });
-      return res.ok;
-    } catch (err) {
-      console.error(err);
-      return false;
-    }
-  },
+  
 
   // ----- USERS -----
   getUsers: async (): Promise<User[]> => {
@@ -216,36 +167,74 @@ const api = {
     }
   },
 
-  // ----- SETTINGS -----
-  getSettings: async (): Promise<{ reservationFee: number }> => {
+  createUser: async (data: Partial<User>): Promise<User | undefined> => {
     try {
-      const res = await fetch(`${API_BASE_URL}/settings`);
-      if (!res.ok) throw new Error("Get settings failed");
+      const res = await fetch(`${API_BASE_URL}/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Create user failed");
       return await res.json();
     } catch (err) {
       console.error(err);
-      return { reservationFee: 0 };
+      return undefined;
     }
   },
-  // ----- USERS -----
-updateUser: async (id: string, data: Partial<User>): Promise<User | undefined> => {
-  try {
-    const res = await fetch(`${API_BASE_URL}/users/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error("Update user failed");
-    return await res.json();
-  } catch (err) {
-    console.error("Update user error:", err);
-    return undefined;
-  }
-},
 
+  updateUser: async (id: string | number, data: Partial<User>): Promise<User | undefined> => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/users/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Update user failed");
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      return undefined;
+    }
+  },
+
+  deleteUser: async (id: string | number): Promise<boolean> => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/users/${id}`, { method: "DELETE" });
+      return res.ok;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  },
+
+  updateUserStatus: async (id: string | number, status: UserStatus): Promise<boolean> => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/users/${id}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      return res.ok;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  },
+
+  updateUserRole: async (id: string | number, role: UserRole, permissions: Permission[]): Promise<boolean> => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/users/${id}/role`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role, permissions }),
+      });
+      return res.ok;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  },
 
 };
 
-
-
-export default api;
+export default extendedApi;

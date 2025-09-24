@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
-import { User } from "../../types";
+import { User } from "../../types/extended";
 
 const Auth: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
   const [step, setStep] = useState<"login-email" | "login-mfa" | "signup">(
